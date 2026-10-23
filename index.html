@@ -715,12 +715,12 @@ function stripDelims(s) {
   for (const [re, g] of pats) { const m = s.match(re); if (m) return m[g || 1].trim(); }
   return s;
 }
-// Texo outputs space-separated tokens ("\frac { 1 } { N }"); keep a space only where two letters would otherwise merge (e.g. "\log x").
+// Texo outputs space-separated tokens ("\frac { 1 } { N }", "\mathrm { M L E }"); keep a space only after a command name, where it is needed ("\log x").
 function tidy(s) {
   const parts = s.trim().split(/\s+/);
   let out = parts[0] || '';
   for (let i = 1; i < parts.length; i++) {
-    out += (/[a-zA-Z]$/.test(out) && /^[a-zA-Z]/.test(parts[i])) ? ' ' + parts[i] : parts[i];
+    out += (/\\[a-zA-Z]+$/.test(out) && /^[a-zA-Z]/.test(parts[i])) ? ' ' + parts[i] : parts[i];
   }
   return out;
 }
