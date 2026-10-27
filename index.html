@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#1f5fa8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>公式转换台 FormulaDesk</title>
 <meta name="description" content="把公式截图或任意写法的公式转换成 Overleaf 可用的 LaTeX 和可直接粘贴进 Word 的公式。支持浏览器本地免费识别，或使用你自己的 AI API。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -162,7 +166,10 @@ footer a { color: var(--accent); }
       <h1>公式转换台 <em>FormulaDesk</em></h1>
       <p class="sub">粘贴公式截图，或输入任何写法的公式，得到 Overleaf 可编译的 LaTeX 和可以直接粘贴进 Word 的公式。可以在浏览器里免费识别，也可以接入你自己的 AI。</p>
     </div>
-    <span class="status" id="status"><span class="dot"></span><span id="statusText">本地识别：模型未加载</span></span>
+    <div class="row">
+      <button class="btn small" type="button" id="installApp" hidden>安装为桌面应用</button>
+      <span class="status" id="status"><span class="dot"></span><span id="statusText">本地识别：模型未加载</span></span>
+    </div>
   </header>
 
   <div class="grid">
@@ -966,6 +973,18 @@ function drawHistory() {
 setMode(mode);
 drawHistory();
 showResults(EXAMPLES.map(f => ({ ...f })), '');
+// ================= install as a desktop app (PWA) =================
+if ('serviceWorker' in navigator && window.isSecureContext && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; $('installApp').hidden = false; });
+window.addEventListener('appinstalled', () => { installEvt = null; $('installApp').hidden = true; say('已安装：可以从桌面或开始菜单打开「公式转换台」'); });
+$('installApp').onclick = async () => {
+  if (!installEvt) return;
+  installEvt.prompt();
+  await installEvt.userChoice.catch(() => null);
+  installEvt = null; $('installApp').hidden = true;
+};
+
 window.__fd = { ocr, preprocess, parseBlocks }; // for debugging in the console
 </script>
 </body>
